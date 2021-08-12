@@ -1,4 +1,4 @@
-const statement = require('./index');
+const statement = require('./statement');
 
 
 test('test statement', () => {
