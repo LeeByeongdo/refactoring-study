@@ -1,3 +1,7 @@
+function statement(invoice, plays) {
+  return renderPlainText(createStatementData(invoice, plays));
+}
+
 function createStatementData(invoice, plays) {
   const statementData = {};
   statementData.customer = invoice.customer;
@@ -8,7 +12,7 @@ function createStatementData(invoice, plays) {
 
   function totalVolumeCredits(data) {
     return data.performances
-      .reduce((total, p) => total + p.volumeCredits, 0);
+        .reduce((total, p) => total + p.volumeCredits, 0);
   }
 
   function totalAmount(data) {
@@ -16,9 +20,8 @@ function createStatementData(invoice, plays) {
   }
 
   function enrichPerformance(aPerformance) {
-    const caculator = new PerformanceCalculator(aPerformance, playFor(aPerformance));
     const result = Object.assign({}, aPerformance);
-    result.play = caculator.play;
+    result.play = playFor(result);
     result.amount = amountFor(result);
     result.volumeCredits = volumeCreditsFor(result);
     return result;
@@ -63,11 +66,27 @@ function createStatementData(invoice, plays) {
 
 }
 
-class PerformanceCalculator {
-  constructor(aPerformance, aPlay) {
-    this.performance = aPerformance;
-    this.play = aPlay
+
+function renderPlainText(data, plays) {
+
+  let result = `청구 내역 (고객명: ${data.customer})\n`;
+
+  for (let perf of data.performances) {
+    result += ` ${perf.play.name}: ${usd(perf.amount)} (${perf.audience}석)\n`;
   }
+
+  result += `총액: ${usd(data.totalAmount)}\n`;
+  result += `적립 포인트: ${data.totalVolumeCredits}점\n`;
+  return result;
+
+
+  function usd(aNumber) {
+    return new Intl.NumberFormat("en-US",
+        {style: 'currency', currency: 'USD', minimumFractionDigits: 2}).format(aNumber / 100);
+  }
+
+
 }
 
-exports.createStatementData = createStatementData;
+
+module.exports = statement;
